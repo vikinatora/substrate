@@ -219,7 +219,7 @@ where
 		trace!(
 			target: LOG_TARGET,
 			"block hash received {:#04X?}",
-			request.block.as_ref(),
+			request.block.clone(),
 		);
 
 		let response =
