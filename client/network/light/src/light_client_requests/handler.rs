@@ -216,11 +216,11 @@ where
 		);
 
 		let block = Decode::decode(&mut request.block.as_ref())?;
-		trace!(
-			target: LOG_TARGET,
-			"block hash received {:#04X?}",
-			request.block.clone(),
-		);
+		// trace!(
+		// 	target: LOG_TARGET,
+		// 	"block hash received {:#04X?}",
+		// 	request.block.clone(),
+		// );
 
 		let response =
 			match self.client.read_proof(block, &mut request.keys.iter().map(AsRef::as_ref)) {
