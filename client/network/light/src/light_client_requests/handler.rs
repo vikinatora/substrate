@@ -88,6 +88,12 @@ where
 				target: LOG_TARGET,
 				"Testing new logs here",
 			);
+			trace!(
+				target: LOG_TARGET,
+				"payload received: {:?}",
+				payload,
+			);
+
 			match self.handle_request(peer, payload) {
 				Ok(response_data) => {
 					let response = OutgoingResponse {
