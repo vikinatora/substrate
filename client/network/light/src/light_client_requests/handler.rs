@@ -154,7 +154,6 @@ where
 		payload: Vec<u8>,
 	) -> Result<Vec<u8>, HandleRequestError> {
 		let request = schema::v1::light::Request::decode(&payload[..])?;
-
 		let response = match &request.request {
 			Some(schema::v1::light::request::Request::RemoteCallRequest(r)) =>
 				self.on_remote_call_request(&peer, r)?,
