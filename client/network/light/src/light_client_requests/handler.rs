@@ -218,7 +218,7 @@ where
 		let block = Decode::decode(&mut request.block.as_ref())?;
 		trace!(
 			target: LOG_TARGET,
-			"block hash received {}",
+			"block hash received {:#04X?}",
 			request.block.as_ref(),
 		);
 
