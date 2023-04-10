@@ -168,7 +168,7 @@ where
 		peer: &PeerId,
 		request: &schema::v1::light::RemoteCallRequest,
 	) -> Result<schema::v1::light::Response, HandleRequestError> {
-		trace!("Remote call request from {} ({} at {:?}).", peer, request.method, request.block,);
+		trace!(target: LOG_TARGET, "Remote call request from {} ({} at {:?}).", peer, request.method, request.block,);
 
 		let block = Decode::decode(&mut request.block.as_ref())?;
 
@@ -176,6 +176,7 @@ where
 			Ok((_, proof)) => schema::v1::light::RemoteCallResponse { proof: Some(proof.encode()) },
 			Err(e) => {
 				trace!(
+					target: LOG_TARGET,
 					"remote call request from {} ({} at {:?}) failed with: {}",
 					peer,
 					request.method,
@@ -197,11 +198,14 @@ where
 		request: &schema::v1::light::RemoteReadRequest,
 	) -> Result<schema::v1::light::Response, HandleRequestError> {
 		if request.keys.is_empty() {
-			debug!("Invalid remote read request sent by {}.", peer);
+			debug!(
+				target: LOG_TARGET,
+				"Invalid remote read request sent by {}.", peer);
 			return Err(HandleRequestError::BadRequest("Remote read request without keys."))
 		}
 
 		trace!(
+			target: LOG_TARGET,
 			"Remote read request from {} ({} at {:?}).",
 			peer,
 			fmt_keys(request.keys.first(), request.keys.last()),
@@ -215,6 +219,7 @@ where
 				Ok(proof) => schema::v1::light::RemoteReadResponse { proof: Some(proof.encode()) },
 				Err(error) => {
 					trace!(
+						target: LOG_TARGET,
 						"remote read request from {} ({} at {:?}) failed with: {}",
 						peer,
 						fmt_keys(request.keys.first(), request.keys.last()),
@@ -236,11 +241,12 @@ where
 		request: &schema::v1::light::RemoteReadChildRequest,
 	) -> Result<schema::v1::light::Response, HandleRequestError> {
 		if request.keys.is_empty() {
-			debug!("Invalid remote child read request sent by {}.", peer);
+			debug!(target: LOG_TARGET,"Invalid remote child read request sent by {}.", peer);
 			return Err(HandleRequestError::BadRequest("Remove read child request without keys."))
 		}
 
 		trace!(
+			target: LOG_TARGET,
 			"Remote read child request from {} ({} {} at {:?}).",
 			peer,
 			HexDisplay::from(&request.storage_key),
@@ -265,6 +271,7 @@ where
 			Ok(proof) => schema::v1::light::RemoteReadResponse { proof: Some(proof.encode()) },
 			Err(error) => {
 				trace!(
+					target: LOG_TARGET,
 					"remote read child request from {} ({} {} at {:?}) failed with: {}",
 					peer,
 					HexDisplay::from(&request.storage_key),
