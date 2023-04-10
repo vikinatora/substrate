@@ -84,7 +84,10 @@ where
 	pub async fn run(mut self) {
 		while let Some(request) = self.request_receiver.next().await {
 			let IncomingRequest { peer, payload, pending_response } = request;
-
+			trace!(
+				target: LOG_TARGET,
+				"Testing new logs here",
+			);
 			match self.handle_request(peer, payload) {
 				Ok(response_data) => {
 					let response = OutgoingResponse {
