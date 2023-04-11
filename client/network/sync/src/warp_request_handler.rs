@@ -97,15 +97,16 @@ impl<TBlock: BlockT> RequestHandler<TBlock> {
 		payload: Vec<u8>,
 		pending_response: oneshot::Sender<OutgoingResponse>,
 	) -> Result<(), HandleRequestError> {
+		debug!(target: "warp-sync-request-handler", "Handling warp sync request 2.1!");
 		let request = WarpProofRequest::<TBlock>::decode(&mut &payload[..])?;
-		debug!(target: "warp-sync", "Handling warp sync request 2!");
+		debug!(target: "warp-sync-request-handler", "Handling warp sync request 2!");
 
 		let EncodedProof(proof) = self
 			.backend
 			.generate(request.begin)
 			.map_err(HandleRequestError::InvalidRequest)?;
 
-		debug!(target: "warp-sync", "Handling warp sync request 3!");
+		debug!(target: "warp-sync-request-handler", "Handling warp sync request 3!");
 
 		pending_response
 			.send(OutgoingResponse {
@@ -118,17 +119,18 @@ impl<TBlock: BlockT> RequestHandler<TBlock> {
 
 	/// Run [`RequestHandler`].
 	pub async fn run(mut self) {
+		debug!(target: "warp-sync-request-handler", "Handling warp sync request! 0");
 		while let Some(request) = self.request_receiver.next().await {
 			//TODO: Add logs here
-			debug!(target: "warp-sync", "Handling warp sync request! 1");
+			debug!(target: "warp-sync-request-handler", "Handling warp sync request! 1");
 			let IncomingRequest { peer, payload, pending_response } = request;
 
 			match self.handle_request(payload, pending_response) {
 				Ok(()) => {
-					debug!(target: "warp-sync", "Handled grandpa warp sync request from {}.", peer)
+					debug!(target: "warp-sync-request-handler", "Handled grandpa warp sync request from {}.", peer)
 				},
 				Err(e) => debug!(
-					target: "warp-sync",
+					target: "warp-sync-request-handler",
 					"Failed to handle grandpa warp sync request from {}: {}",
 					peer, e,
 				),
