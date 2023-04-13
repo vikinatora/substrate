@@ -43,6 +43,8 @@ pub fn generate_request_response_config<Hash: AsRef<[u8]>>(
 	genesis_hash: Hash,
 	fork_id: Option<&str>,
 ) -> RequestResponseConfig {
+
+	debug!(target: "warp-sync-request-handler", "Generate Request response config");
 	RequestResponseConfig {
 		name: generate_protocol_name(genesis_hash, fork_id).into(),
 		fallback_names: std::iter::once(generate_legacy_protocol_name(protocol_id).into())
@@ -83,6 +85,8 @@ impl<TBlock: BlockT> RequestHandler<TBlock> {
 		fork_id: Option<&str>,
 		backend: Arc<dyn WarpSyncProvider<TBlock>>,
 	) -> (Self, RequestResponseConfig) {
+
+		debug!(target: "warp-sync-request-handler", "Request handler! 0");
 		let (tx, request_receiver) = mpsc::channel(20);
 
 		let mut request_response_config =
