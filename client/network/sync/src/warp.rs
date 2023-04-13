@@ -25,6 +25,7 @@ use crate::{
 };
 use futures::FutureExt;
 use log::error;
+use log::debug;
 use sc_client_api::ProofProvider;
 use sc_network_common::sync::{
 	message::{BlockAttributes, BlockData, BlockRequest, Direction, FromBlock},
