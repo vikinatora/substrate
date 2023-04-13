@@ -84,6 +84,7 @@ impl<B: BlockT> SyncingService<B> {
 		Self { tx, num_connected, is_major_syncing }
 	}
 
+	debug!(target: "warp-sync-request-handler", "Syncing service!");
 	/// Get the number of active peers.
 	pub async fn num_active_peers(&self) -> Result<usize, oneshot::Canceled> {
 		let (tx, rx) = oneshot::channel();
@@ -232,6 +233,9 @@ impl<B: BlockT> SyncEventStream for SyncingService<B> {
 	/// Get syncing event stream.
 	fn event_stream(&self, name: &'static str) -> Pin<Box<dyn Stream<Item = SyncEvent> + Send>> {
 		let (tx, rx) = tracing_unbounded(name, 100_000);
+
+		debug!(target: "warp-sync-request-handler", "Sync event stream: {:?}", tx);
+		debug!(target: "warp-sync-request-handler", "Sync event stream: {:?}", rx);
 		let _ = self.tx.unbounded_send(ToServiceCommand::EventStream(tx));
 		Box::pin(rx)
 	}
