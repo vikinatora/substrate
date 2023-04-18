@@ -38,7 +38,7 @@ const MAX_RESPONSE_SIZE: u64 = 16 * 1024 * 1024;
 
 /// Generates a [`RequestResponseConfig`] for the grandpa warp sync request protocol, refusing
 /// incoming requests.
-pub fn generate_request_response_config<Hash: AsRef<[u8]>>(
+pub fn generate_request_response_config<Hash: AsRef<[u8]> + Clone>(
 	protocol_id: ProtocolId,
 	genesis_hash: Hash,
 	fork_id: Option<&str>,
