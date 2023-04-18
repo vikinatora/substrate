@@ -1586,10 +1586,6 @@ where
 					new_common_number,
 					peer.best_number,
 				);
-				debug!(
-					target: "sync-warp",
-					"Updating peer"
-				);
 				peer.common_number = new_common_number;
 			}
 		}
