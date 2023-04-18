@@ -38,6 +38,7 @@ use sp_blockchain::HeaderBackend;
 use sp_consensus_grandpa::{AuthorityList, SetId};
 use sp_runtime::traits::{Block as BlockT, Header, NumberFor, Zero};
 use std::{sync::Arc, task::Poll};
+use log::{debug, error, info, trace, warn};
 
 enum Phase<B: BlockT, Client> {
 	WarpProof {
@@ -231,6 +232,7 @@ where
 
 	/// Produce next warp proof request.
 	pub fn next_warp_proof_request(&self) -> Option<WarpProofRequest<B>> {
+		trace!("warp proof request");
 		match &self.phase {
 			Phase::WarpProof { last_hash, .. } => Some(WarpProofRequest { begin: *last_hash }),
 			Phase::TargetBlock(_) | Phase::State(_) | Phase::PendingTargetBlock { .. } => None,
@@ -239,6 +241,7 @@ where
 
 	/// Produce next target block request.
 	pub fn next_target_block_request(&self) -> Option<(NumberFor<B>, BlockRequest<B>)> {
+		trace!(target:"warp-sync","Next target block request");
 		match &self.phase {
 			Phase::WarpProof { .. } | Phase::State(_) | Phase::PendingTargetBlock { .. } => None,
 			Phase::TargetBlock(header) => {
@@ -267,6 +270,7 @@ where
 
 	/// Return target block number if it is known.
 	pub fn target_block_number(&self) -> Option<NumberFor<B>> {
+		trace!(target:"warp-sync","Target block number");
 		match &self.phase {
 			Phase::WarpProof { .. } | Phase::PendingTargetBlock { .. } => None,
 			Phase::TargetBlock(header) => Some(*header.number()),
