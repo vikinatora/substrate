@@ -44,8 +44,8 @@ pub fn generate_request_response_config<Hash: AsRef<[u8]>>(
 	fork_id: Option<&str>,
 ) -> RequestResponseConfig {
 
-	debug!(target: "warp-sync-request-handler", "Generate Request response config");
-	log::debug!(target: "warp-sync-request-handler", "Generate Request response config");
+	debug!(target: "sync", "Generate Request response config");
+	log::debug!(target: "sync", "Generate Request response config");
 	RequestResponseConfig {
 		name: generate_protocol_name(genesis_hash, fork_id).into(),
 		fallback_names: std::iter::once(generate_legacy_protocol_name(protocol_id).into())
@@ -87,8 +87,8 @@ impl<TBlock: BlockT> RequestHandler<TBlock> {
 		backend: Arc<dyn WarpSyncProvider<TBlock>>,
 	) -> (Self, RequestResponseConfig) {
 
-		debug!(target: "warp-sync-request-handler", "Request handler! 0");
-		log::debug!(target: "warp-sync-request-handler", "Request handler! 0");
+		debug!(target: "sync", "Request handler! 0");
+		log::debug!(target: "sync", "Request handler! 0");
 		let (tx, request_receiver) = mpsc::channel(20);
 
 		let mut request_response_config =
@@ -103,19 +103,19 @@ impl<TBlock: BlockT> RequestHandler<TBlock> {
 		payload: Vec<u8>,
 		pending_response: oneshot::Sender<OutgoingResponse>,
 	) -> Result<(), HandleRequestError> {
-		debug!(target: "warp-sync-request-handler", "Handling warp sync request 2.1!");
-		log::debug!(target: "warp-sync-request-handler", "Handling warp sync request 2.1!");
+		debug!(target: "sync", "Handling warp sync request 2.1!");
+		log::debug!(target: "sync", "Handling warp sync request 2.1!");
 		let request = WarpProofRequest::<TBlock>::decode(&mut &payload[..])?;
-		debug!(target: "warp-sync-request-handler", "Handling warp sync request 2!");
-		log::debug!(target: "warp-sync-request-handler", "Handling warp sync request 2!");
+		debug!(target: "sync", "Handling warp sync request 2!");
+		log::debug!(target: "sync", "Handling warp sync request 2!");
 
 		let EncodedProof(proof) = self
 			.backend
 			.generate(request.begin)
 			.map_err(HandleRequestError::InvalidRequest)?;
 
-		debug!(target: "warp-sync-request-handler", "Handling warp sync request 3!");
-		log::debug!(target: "warp-sync-request-handler", "Handling warp sync request 3!");
+		debug!(target: "sync", "Handling warp sync request 3!");
+		log::debug!(target: "sync", "Handling warp sync request 3!");
 		
 		pending_response
 			.send(OutgoingResponse {
@@ -128,21 +128,21 @@ impl<TBlock: BlockT> RequestHandler<TBlock> {
 
 	/// Run [`RequestHandler`].
 	pub async fn run(mut self) {
-		debug!(target: "warp-sync-request-handler", "Handling warp sync request! 0");
-		log::debug!(target: "warp-sync-request-handler", "Handling warp sync request! 0");
+		debug!(target: "sync", "Handling warp sync request! 0");
+		log::debug!(target: "sync", "Handling warp sync request! 0");
 		while let Some(request) = self.request_receiver.next().await {
 			//TODO: Add logs here
-			debug!(target: "warp-sync-request-handler", "Handling warp sync request! 1");
-			log::debug!(target: "warp-sync-request-handler", "Handling warp sync request! 1");
+			debug!(target: "sync", "Handling warp sync request! 1");
+			log::debug!(target: "sync", "Handling warp sync request! 1");
 			let IncomingRequest { peer, payload, pending_response } = request;
 
 			match self.handle_request(payload, pending_response) {
 				Ok(()) => {
-					debug!(target: "warp-sync-request-handler", "Handled grandpa warp sync request from {}.", peer);
-					log::debug!(target: "warp-sync-request-handler", "Handled grandpa warp sync request from {}.", peer);
+					debug!(target: "sync", "Handled grandpa warp sync request from {}.", peer);
+					log::debug!(target: "sync", "Handled grandpa warp sync request from {}.", peer);
 				},
 				Err(e) => debug!(
-					target: "warp-sync-request-handler",
+					target: "sync",
 					"Failed to handle grandpa warp sync request from {}: {}",
 					peer, e,
 				),

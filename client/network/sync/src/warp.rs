@@ -86,8 +86,8 @@ where
 	/// proofs, in this case we will continue polling until the target block is known.
 	pub fn new(client: Arc<Client>, warp_sync_params: WarpSyncParams<B>) -> Self {
 
-		debug!(target: "warp-sync-request-handler", "Warp sync from warp.rs");
-		log::debug!(target: "warp-sync-request-handler", "Warp sync from warp.rs");
+		debug!(target: "sync", "Warp sync from warp.rs");
+		log::debug!(target: "sync", "Warp sync from warp.rs");
 		let last_hash = client.hash(Zero::zero()).unwrap().expect("Genesis header always exists");
 		match warp_sync_params {
 			WarpSyncParams::WithProvider(warp_sync_provider) => {
@@ -113,7 +113,7 @@ where
 	/// sent.
 	pub fn poll(&mut self, cx: &mut std::task::Context) {
 
-		debug!(target: "warp-sync-request-handler", "Polling to make progress");
+		debug!(target: "sync", "Polling to make progress");
 		let new_phase = if let Phase::PendingTargetBlock { target_block: Some(target_block) } =
 			&mut self.phase
 		{
@@ -134,8 +134,8 @@ where
 
 	///  Validate and import a state response.
 	pub fn import_state(&mut self, response: StateResponse) -> ImportResult<B> {
-		debug!(target: "warp-sync-request-handler", "Import state response");
-		log::debug!(target: "warp-sync-request-handler", "Import state response");
+		debug!(target: "sync", "Import state response");
+		log::debug!(target: "sync", "Import state response");
 		match &mut self.phase {
 			Phase::WarpProof { .. } | Phase::TargetBlock(_) | Phase::PendingTargetBlock { .. } => {
 				log::debug!(target: "sync", "Unexpected state response");
@@ -147,8 +147,8 @@ where
 
 	///  Validate and import a warp proof response.
 	pub fn import_warp_proof(&mut self, response: EncodedProof) -> WarpProofImportResult {
-		debug!(target: "warp-sync-request-handler", "Import warp proof");
-		log::debug!(target: "warp-sync-request-handler", "Import warp proof");
+		debug!(target: "sync", "Import warp proof");
+		log::debug!(target: "sync", "Import warp proof");
 		match &mut self.phase {
 			Phase::State(_) | Phase::TargetBlock(_) | Phase::PendingTargetBlock { .. } => {
 				log::debug!(target: "sync", "Unexpected warp proof response");
@@ -180,7 +180,7 @@ where
 
 	/// Import the target block body.
 	pub fn import_target_block(&mut self, block: BlockData<B>) -> TargetBlockImportResult {
-		debug!(target: "warp-sync-request-handler", "Import target block");
+		debug!(target: "sync", "Import target block");
 		match &mut self.phase {
 			Phase::WarpProof { .. } | Phase::State(_) | Phase::PendingTargetBlock { .. } => {
 				log::debug!(target: "sync", "Unexpected target block response");
@@ -257,7 +257,7 @@ where
 
 	/// Return target block hash if it is known.
 	pub fn target_block_hash(&self) -> Option<B::Hash> {
-		debug!(target: "warp-sync-request-handler", "target block hash");
+		debug!(target: "sync", "target block hash");
 		match &self.phase {
 			Phase::WarpProof { .. } | Phase::TargetBlock(_) | Phase::PendingTargetBlock { .. } =>
 				None,
@@ -285,7 +285,7 @@ where
 
 	/// Returns state sync estimated progress (percentage, bytes)
 	pub fn progress(&self) -> WarpSyncProgress<B> {
-		debug!(target: "warp-sync-request-handler", "Warp progress");
+		debug!(target: "sync", "Warp progress");
 		match &self.phase {
 			Phase::WarpProof { .. } => WarpSyncProgress {
 				phase: WarpSyncPhase::DownloadingWarpProofs,

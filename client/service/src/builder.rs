@@ -863,7 +863,7 @@ where
 				config.chain_spec.fork_id(),
 				warp_with_provider.clone(),
 			);
-			spawn_handle.spawn("warp-sync-request-handler", Some("networking"), handler.run());
+			spawn_handle.spawn("sync", Some("networking"), handler.run());
 			Some(protocol_config)
 		},
 		_ => None,
