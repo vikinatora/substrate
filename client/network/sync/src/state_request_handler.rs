@@ -135,6 +135,7 @@ where
 	) -> (Self, ProtocolConfig) {
 		// Reserve enough request slots for one request per peer when we are at the maximum
 		// number of peers.
+		debug!(target:"state","State request handler");
 		let (tx, request_receiver) = mpsc::channel(num_peer_hint);
 
 		let mut protocol_config = generate_protocol_config(
@@ -159,7 +160,7 @@ where
 	pub async fn run(mut self) {
 		while let Some(request) = self.request_receiver.next().await {
 			let IncomingRequest { peer, payload, pending_response } = request;
-
+			debug!(target:"state","State request handler");
 			match self.handle_request(payload, pending_response, &peer) {
 				Ok(()) => debug!(target: LOG_TARGET, "Handled block request from {}.", peer),
 				Err(e) => debug!(
@@ -176,6 +177,8 @@ where
 		pending_response: oneshot::Sender<OutgoingResponse>,
 		peer: &PeerId,
 	) -> Result<(), HandleRequestError> {
+
+		debug!(target:"state","Handle request");
 		let request = StateRequest::decode(&payload[..])?;
 		let block: B::Hash = Decode::decode(&mut request.block.as_ref())?;
 
