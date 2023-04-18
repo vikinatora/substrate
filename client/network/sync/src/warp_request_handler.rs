@@ -138,8 +138,8 @@ impl<TBlock: BlockT> RequestHandler<TBlock> {
 
 			match self.handle_request(payload, pending_response) {
 				Ok(()) => {
-					debug!(target: "warp-sync-request-handler", "Handled grandpa warp sync request from {}.", peer)
-					log::debug!(target: "warp-sync-request-handler", "Handled grandpa warp sync request from {}.", peer)
+					debug!(target: "warp-sync-request-handler", "Handled grandpa warp sync request from {}.", peer);
+					log::debug!(target: "warp-sync-request-handler", "Handled grandpa warp sync request from {}.", peer);
 				},
 				Err(e) => debug!(
 					target: "warp-sync-request-handler",
