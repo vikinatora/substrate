@@ -38,7 +38,7 @@ use sp_blockchain::HeaderBackend;
 use sp_consensus_grandpa::{AuthorityList, SetId};
 use sp_runtime::traits::{Block as BlockT, Header, NumberFor, Zero};
 use std::{sync::Arc, task::Poll};
-use log::{debug, error, info, trace, warn};
+use log::{info, trace, warn};
 
 enum Phase<B: BlockT, Client> {
 	WarpProof {

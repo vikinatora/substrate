@@ -507,7 +507,7 @@ where
 		} else {
 			SyncState::Idle
 		};
-
+		debug!(target:"warp-sync", "Warp sync progress");
 		let warp_sync_progress = match (&self.warp_sync, &self.mode, &self.gap_sync) {
 			(_, _, Some(gap_sync)) => Some(WarpSyncProgress {
 				phase: WarpSyncPhase::DownloadingBlocks(gap_sync.best_queued_number),
@@ -1585,6 +1585,10 @@ where
 					peer.common_number,
 					new_common_number,
 					peer.best_number,
+				);
+				debug!(
+					target: "sync-warp",
+					"Updating peer"
 				);
 				peer.common_number = new_common_number;
 			}
