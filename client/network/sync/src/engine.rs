@@ -279,6 +279,7 @@ where
 			SyncOperationMode::Warp => SyncMode::Warp,
 		};
 		debug!(target: "warp-sync-request-handler", "Syncing engine");
+		log::debug!(target: "warp-sync-request-handler", "Syncing engine");
 		let max_parallel_downloads = network_config.max_parallel_downloads;
 		let cache_capacity = NonZeroUsize::new(
 			(network_config.default_peers_set.in_peers as usize +

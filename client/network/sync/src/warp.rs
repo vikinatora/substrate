@@ -87,6 +87,7 @@ where
 	pub fn new(client: Arc<Client>, warp_sync_params: WarpSyncParams<B>) -> Self {
 
 		debug!(target: "warp-sync-request-handler", "Warp sync from warp.rs");
+		log::debug!(target: "warp-sync-request-handler", "Warp sync from warp.rs");
 		let last_hash = client.hash(Zero::zero()).unwrap().expect("Genesis header always exists");
 		match warp_sync_params {
 			WarpSyncParams::WithProvider(warp_sync_provider) => {
@@ -134,6 +135,7 @@ where
 	///  Validate and import a state response.
 	pub fn import_state(&mut self, response: StateResponse) -> ImportResult<B> {
 		debug!(target: "warp-sync-request-handler", "Import state response");
+		log::debug!(target: "warp-sync-request-handler", "Import state response");
 		match &mut self.phase {
 			Phase::WarpProof { .. } | Phase::TargetBlock(_) | Phase::PendingTargetBlock { .. } => {
 				log::debug!(target: "sync", "Unexpected state response");
@@ -146,6 +148,7 @@ where
 	///  Validate and import a warp proof response.
 	pub fn import_warp_proof(&mut self, response: EncodedProof) -> WarpProofImportResult {
 		debug!(target: "warp-sync-request-handler", "Import warp proof");
+		log::debug!(target: "warp-sync-request-handler", "Import warp proof");
 		match &mut self.phase {
 			Phase::State(_) | Phase::TargetBlock(_) | Phase::PendingTargetBlock { .. } => {
 				log::debug!(target: "sync", "Unexpected warp proof response");
