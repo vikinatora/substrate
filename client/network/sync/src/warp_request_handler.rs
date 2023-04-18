@@ -46,6 +46,7 @@ pub fn generate_request_response_config<Hash: AsRef<[u8]>>(
 
 	debug!(target: "sync", "Generate Request response config");
 	log::debug!(target: "sync", "Generate Request response config");
+	log:debug!(target: "sync", "protocol name {}", generate_protocol_name(genesis_hash, fork_id).into());
 	RequestResponseConfig {
 		name: generate_protocol_name(genesis_hash, fork_id).into(),
 		fallback_names: std::iter::once(generate_legacy_protocol_name(protocol_id).into())
