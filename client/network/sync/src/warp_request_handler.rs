@@ -46,8 +46,8 @@ pub fn generate_request_response_config<Hash: AsRef<[u8]>>(
 
 	debug!(target:"warp-sync", "Generate Request response config");
 	log::debug!(target: "warp-sync", "Generate Request response config");
-	// debug!(target: "warp-sync", "protocol name {}", generate_protocol_name(genesis_hash.clone(), fork_id.clone()));
-	// debug!(target: "warp-sync", "legacy protocol name {}", generate_legacy_protocol_name(protocol_id.clone()));
+	debug!(target: "warp-sync", "protocol name {}", generate_protocol_name(genesis_hash.as_ref(), fork_id.as_ref()));
+	debug!(target: "warp-sync", "legacy protocol name {}", generate_legacy_protocol_name(protocol_id.as_ref()));
 	RequestResponseConfig {
 		name: generate_protocol_name(genesis_hash, fork_id).into(),
 		fallback_names: std::iter::once(generate_legacy_protocol_name(protocol_id).into())
