@@ -54,6 +54,8 @@ use libp2p::{
 	},
 };
 
+se log::{debug};
+
 use sc_peerset::{PeersetHandle, BANNED_THRESHOLD};
 
 use std::{
@@ -940,6 +942,7 @@ impl RequestResponseCodec for GenericCodec {
 		let length = unsigned_varint::aio::read_usize(&mut io)
 			.await
 			.map_err(|err| io::Error::new(io::ErrorKind::InvalidInput, err))?;
+		debug!(target: "request-response-codec", "Read request: length {}", length.clone());
 		if length > usize::try_from(self.max_request_size).unwrap_or(usize::MAX) {
 			return Err(io::Error::new(
 				io::ErrorKind::InvalidInput,
@@ -975,6 +978,7 @@ impl RequestResponseCodec for GenericCodec {
 			Err(err) => return Err(io::Error::new(io::ErrorKind::InvalidInput, err)),
 		};
 
+		debug!(target: "request-response-codec", "Read response: length {}", length.clone());
 		if length > usize::try_from(self.max_response_size).unwrap_or(usize::MAX) {
 			return Err(io::Error::new(
 				io::ErrorKind::InvalidInput,
@@ -1005,6 +1009,8 @@ impl RequestResponseCodec for GenericCodec {
 		}
 
 		// Write the payload.
+
+		debug!(target: "request-response-codec", "Write request: Length {}", length.clone());
 		io.write_all(&req).await?;
 
 		io.close().await?;
@@ -1020,6 +1026,8 @@ impl RequestResponseCodec for GenericCodec {
 	where
 		T: AsyncWrite + Unpin + Send,
 	{
+
+		debug!(target: "request-response-codec", "Write response Res {}", res.to_string().clone());
 		// If `res` is an `Err`, we jump to closing the substream without writing anything on it.
 		if let Ok(res) = res {
 			// TODO: check the length?
