@@ -1010,7 +1010,7 @@ impl RequestResponseCodec for GenericCodec {
 
 		// Write the payload.
 
-		debug!(target: "request-response-codec", "Write request: Length {}", length.clone());
+		debug!(target: "request-response-codec", "Write request: Length {}", req.len());
 		io.write_all(&req).await?;
 
 		io.close().await?;
