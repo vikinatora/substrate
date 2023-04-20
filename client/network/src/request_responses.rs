@@ -1026,12 +1026,12 @@ impl RequestResponseCodec for GenericCodec {
 	where
 		T: AsyncWrite + Unpin + Send,
 	{
-
-		debug!(target: "request-response-codec", "Write response Res {}", res.len());
+		debug!(target: "request-response-codec", "Writing response");
 		// If `res` is an `Err`, we jump to closing the substream without writing anything on it.
 		if let Ok(res) = res {
 			// TODO: check the length?
 			// Write the length.
+			debug!(target: "request-response-codec", "Write response Res {}", res.len());
 			{
 				let mut buffer = unsigned_varint::encode::usize_buffer();
 				io.write_all(unsigned_varint::encode::usize(res.len(), &mut buffer)).await?;
