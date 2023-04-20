@@ -944,6 +944,7 @@ impl RequestResponseCodec for GenericCodec {
 			.map_err(|err| io::Error::new(io::ErrorKind::InvalidInput, err))?;
 		debug!(target: "request-response-codec", "Read request: length {}", length.clone());
 		if length > usize::try_from(self.max_request_size).unwrap_or(usize::MAX) {
+			debug!(target: "request-response-codec", "Request size exceeds limit");
 			return Err(io::Error::new(
 				io::ErrorKind::InvalidInput,
 				format!("Request size exceeds limit: {} > {}", length, self.max_request_size),
@@ -953,6 +954,7 @@ impl RequestResponseCodec for GenericCodec {
 		// Read the payload.
 		let mut buffer = vec![0; length];
 		io.read_exact(&mut buffer).await?;
+		debug!(target: "request-response-codec", "Read payload successfully");
 		Ok(buffer)
 	}
 
