@@ -932,7 +932,7 @@ impl RequestResponseCodec for GenericCodec {
 
 	async fn read_request<T>(
 		&mut self,
-		_: &Self::Protocol,
+		protocol: &Self::Protocol,
 		mut io: &mut T,
 	) -> io::Result<Self::Request>
 	where
@@ -942,6 +942,9 @@ impl RequestResponseCodec for GenericCodec {
 		let length = unsigned_varint::aio::read_usize(&mut io)
 			.await
 			.map_err(|err| io::Error::new(io::ErrorKind::InvalidInput, err))?;
+
+		let protocol_name = String::from_utf8(protocol.clone()).unwrap();
+		debug!(target: "request-response-codec", "Read request: protocol {}", protocol_name);
 		debug!(target: "request-response-codec", "Read request: length {}", length.clone());
 		if length > usize::try_from(self.max_request_size).unwrap_or(usize::MAX) {
 			debug!(target: "request-response-codec", "Request size exceeds limit");
