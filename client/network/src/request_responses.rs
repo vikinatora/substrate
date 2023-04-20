@@ -1027,7 +1027,7 @@ impl RequestResponseCodec for GenericCodec {
 		T: AsyncWrite + Unpin + Send,
 	{
 
-		debug!(target: "request-response-codec", "Write response Res {}", res.to_string().clone());
+		debug!(target: "request-response-codec", "Write response Res {}", res.len());
 		// If `res` is an `Err`, we jump to closing the substream without writing anything on it.
 		if let Ok(res) = res {
 			// TODO: check the length?
