@@ -996,8 +996,10 @@ impl RequestResponseCodec for GenericCodec {
 		io.read_exact(&mut buffer).await?;
 
 		// Print out buffer elements for debugging purposes.
-		let mut out = std::io::stdout();
-		out.write_all(buffer)?;
+		let mut out = io::stdout();
+
+		let print_buffer: &[u8] = &buffer;
+		out.write_all(print_buffer)?;
 		out.flush()?;
 
 		Ok(Ok(buffer))
