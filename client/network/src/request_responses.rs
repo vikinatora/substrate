@@ -999,8 +999,9 @@ impl RequestResponseCodec for GenericCodec {
 		// Print out buffer elements for debugging purposes.
 		let mut out = io::stdout();
 
+		let buf1: &[u8] = &buffer;
 		debug!("Response array: {}", String::from_utf8(
-			buffer.as_ref(&buffer)
+			buf1.as_ref()
 				.iter()
 				.map(|b| std::ascii::escape_default(*b))
 				.flatten()
