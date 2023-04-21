@@ -1000,7 +1000,7 @@ impl RequestResponseCodec for GenericCodec {
 		let mut out = io::stdout();
 
 		debug!("Response array: {}", String::from_utf8(
-			buf.as_ref()
+			buffer.as_ref(&buffer)
 				.iter()
 				.map(|b| std::ascii::escape_default(*b))
 				.flatten()
