@@ -1040,18 +1040,18 @@ impl RequestResponseCodec for GenericCodec {
 			debug!(target: "request-response-codec", "Write response length {}", res.len());
 			{
 				let mut buffer = unsigned_varint::encode::usize_buffer();
+
+				let buff_arr: &[u8] = &buffer;
+				debug!("Length byte array: {}", String::from_utf8(
+				buff_arr.as_ref()
+					.iter()
+					.map(|b| std::ascii::escape_default(*b))
+					.flatten()
+					.collect(),
+				).unwrap());
+
 				io.write_all(unsigned_varint::encode::usize(res.len(), &mut buffer)).await?;
 			}
-
-			let buff_arr: &[u8] = &buffer;
-			debug!("Length byte array: {}", String::from_utf8(
-			buff_arr.as_ref()
-				.iter()
-				.map(|b| std::ascii::escape_default(*b))
-				.flatten()
-				.collect(),
-			).unwrap());
-
 
 			let res_arr: &[u8] = &res;
 			debug!("Response array: {}", String::from_utf8(
