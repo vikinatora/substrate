@@ -65,6 +65,7 @@ use std::{
 	task::{Context, Poll},
 	time::{Duration, Instant},
 };
+use std::ascii::escape_default;
 
 pub use libp2p::request_response::{
 	InboundFailure, OutboundFailure, RequestId, RequestResponseConfig,
@@ -998,9 +999,13 @@ impl RequestResponseCodec for GenericCodec {
 		// Print out buffer elements for debugging purposes.
 		let mut out = io::stdout();
 
-		let print_buffer: &[u8] = &buffer;
-		out.write_all(print_buffer)?;
-		out.flush()?;
+		debug!("Response array: {}", String::from_utf8(
+			buf.as_ref()
+				.iter()
+				.map(|b| std::ascii::escape_default(*b))
+				.flatten()
+				.collect(),
+		).unwrap());
 
 		Ok(Ok(buffer))
 	}
