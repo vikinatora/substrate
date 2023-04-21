@@ -996,18 +996,6 @@ impl RequestResponseCodec for GenericCodec {
 		let mut buffer = vec![0; length];
 		io.read_exact(&mut buffer).await?;
 
-		// Print out buffer elements for debugging purposes.
-		let mut out = io::stdout();
-
-		let buf1: &[u8] = &buffer;
-		debug!("Response array: {}", String::from_utf8(
-			buf1.as_ref()
-				.iter()
-				.map(|b| std::ascii::escape_default(*b))
-				.flatten()
-				.collect(),
-		).unwrap());
-
 		Ok(Ok(buffer))
 	}
 
@@ -1049,12 +1037,30 @@ impl RequestResponseCodec for GenericCodec {
 		// If `res` is an `Err`, we jump to closing the substream without writing anything on it.
 		if let Ok(res) = res {
 			// TODO: check the length?
-			// Write the length.
-			debug!(target: "request-response-codec", "Write response Res {}", res.len());
+			debug!(target: "request-response-codec", "Write response length {}", res.len());
 			{
 				let mut buffer = unsigned_varint::encode::usize_buffer();
 				io.write_all(unsigned_varint::encode::usize(res.len(), &mut buffer)).await?;
 			}
+
+			let buff_arr: &[u8] = &buffer;
+			debug!("Length byte array: {}", String::from_utf8(
+			buff_arr.as_ref()
+				.iter()
+				.map(|b| std::ascii::escape_default(*b))
+				.flatten()
+				.collect(),
+			).unwrap());
+
+
+			let res_arr: &[u8] = &res;
+			debug!("Response array: {}", String::from_utf8(
+			res_arr.as_ref()
+				.iter()
+				.map(|b| std::ascii::escape_default(*b))
+				.flatten()
+				.collect(),
+			).unwrap());
 
 			// Write the payload.
 			io.write_all(&res).await?;
