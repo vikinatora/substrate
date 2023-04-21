@@ -994,6 +994,12 @@ impl RequestResponseCodec for GenericCodec {
 		// Read the payload.
 		let mut buffer = vec![0; length];
 		io.read_exact(&mut buffer).await?;
+
+		// Print out buffer elements for debugging purposes.
+		let mut out = std::io::stdout();
+		out.write_all(buffer)?;
+		out.flush()?;
+
 		Ok(Ok(buffer))
 	}
 
