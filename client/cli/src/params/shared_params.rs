@@ -35,7 +35,7 @@ pub struct SharedParams {
 	///
 	/// This flag sets `--chain=dev`, `--force-authoring`, `--rpc-cors=all`,
 	/// `--alice`, and `--tmp` flags, unless explicitly overridden.
-	#[arg(long, conflicts_with_all = &["chain"])]
+	#[arg(long)]
 	pub dev: bool,
 
 	/// Specify custom base path.
