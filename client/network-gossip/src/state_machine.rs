@@ -463,7 +463,7 @@ impl<B: BlockT> ConsensusGossip<B> {
 		let message_hash = HashFor::<B>::hash(&message);
 		self.register_message_hashed(message_hash, topic, message.clone(), None);
 		let intent = if force { MessageIntent::ForcedBroadcast } else { MessageIntent::Broadcast };
-		debug!("Peers when multicasting {}", self.peers.keys().copied().collect());
+		debug!(target: "grandpa" ,"Peers when multicasting {}", self.peers.keys().copied().collect());
 		propagate(
 			network,
 			self.protocol.clone(),

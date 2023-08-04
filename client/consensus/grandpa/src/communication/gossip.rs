@@ -1451,7 +1451,10 @@ impl<Block: BlockT> GossipValidator<Block> {
 						.write()
 						.import_neighbor_message(who, update.into_neighbor_packet());
 
-					debug!("Received neighbour message {} from peer {}", update.into_neighbor_packet(), *who);
+					debug!(target: LOG_TARGET, "Received neighbour message from peer {}", *who);
+					debug!(target: LOG_TARGET, "commit_finalized_height: {}", update.into_neighbor_packet().commit_finalized_height);
+					debug!(target: LOG_TARGET, "commit_finalized_height: {}", update.into_neighbor_packet().round.0);
+					debug!(target: LOG_TARGET, "commit_finalized_height: {}", update.into_neighbor_packet().set_id.0);
 
 					if let Some((peer, cost_benefit)) = report {
 						self.report(peer, cost_benefit);
