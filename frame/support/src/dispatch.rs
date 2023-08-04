@@ -29,7 +29,8 @@ pub use crate::{
 		result,
 	},
 	traits::{
-		CallMetadata, GetCallMetadata, GetCallName, GetStorageVersion, UnfilteredDispatchable,
+		CallMetadata, GetCallIndex, GetCallMetadata, GetCallName, GetStorageVersion,
+		UnfilteredDispatchable,
 	},
 };
 #[cfg(feature = "std")]
@@ -549,27 +550,6 @@ impl<T> ClassifyDispatch<T> for (Weight, DispatchClass, Pays) {
 
 // TODO: Eventually remove these
 
-impl From<Option<u64>> for PostDispatchInfo {
-	fn from(maybe_actual_computation: Option<u64>) -> Self {
-		let actual_weight = match maybe_actual_computation {
-			Some(actual_computation) => Some(Weight::from_parts(actual_computation, 0)),
-			None => None,
-		};
-		Self { actual_weight, pays_fee: Default::default() }
-	}
-}
-
-impl From<(Option<u64>, Pays)> for PostDispatchInfo {
-	fn from(post_weight_info: (Option<u64>, Pays)) -> Self {
-		let (maybe_actual_time, pays_fee) = post_weight_info;
-		let actual_weight = match maybe_actual_time {
-			Some(actual_time) => Some(Weight::from_parts(actual_time, 0)),
-			None => None,
-		};
-		Self { actual_weight, pays_fee }
-	}
-}
-
 impl<T> ClassifyDispatch<T> for u64 {
 	fn classify_dispatch(&self, _: T) -> DispatchClass {
 		DispatchClass::Normal
@@ -729,7 +709,7 @@ impl<T> PaysFee<T> for (u64, Pays) {
 /// ```
 /// # #[macro_use]
 /// # extern crate frame_support;
-/// # use frame_support::{weights::Weight, dispatch::{DispatchResultWithPostInfo, WithPostDispatchInfo}};
+/// # use frame_support::{weights::Weight, dispatch::{DispatchResultWithPostInfo, WithPostDispatchInfo, PostDispatchInfo}};
 /// # use frame_system::{Config, ensure_signed};
 /// decl_module! {
 /// 	pub struct Module<T: Config> for enum Call where origin: T::RuntimeOrigin {
@@ -743,7 +723,7 @@ impl<T> PaysFee<T> for (u64, Pays) {
 /// 				return Ok(None::<Weight>.into());
 /// 			}
 /// 			// expensive calculation not executed: use only a portion of the weight
-/// 			Ok(Some(100_000).into())
+/// 			Ok(PostDispatchInfo { actual_weight: Some(Weight::from_parts(100_000, 0)), ..Default::default() })
 /// 		}
 /// 	}
 /// }
@@ -2977,7 +2957,7 @@ macro_rules! __dispatch_impl_metadata {
 		{
 			#[doc(hidden)]
 			#[allow(dead_code)]
-			pub fn call_functions() -> $crate::metadata::PalletCallMetadata {
+			pub fn call_functions() -> $crate::metadata_ir::PalletCallMetadataIR {
 				$crate::scale_info::meta_type::<$call_type<$trait_instance $(, $instance)?>>().into()
 			}
 		}
@@ -2998,7 +2978,7 @@ macro_rules! __impl_error_metadata {
 		{
 			#[doc(hidden)]
 			#[allow(dead_code)]
-			pub fn error_metadata() -> Option<$crate::metadata::PalletErrorMetadata> {
+			pub fn error_metadata() -> Option<$crate::metadata_ir::PalletErrorMetadataIR> {
 				None
 			}
 		}
@@ -3013,8 +2993,8 @@ macro_rules! __impl_error_metadata {
 		{
 			#[doc(hidden)]
 			#[allow(dead_code)]
-			pub fn error_metadata() -> Option<$crate::metadata::PalletErrorMetadata> {
-				Some($crate::metadata::PalletErrorMetadata {
+			pub fn error_metadata() -> Option<$crate::metadata_ir::PalletErrorMetadataIR> {
+				Some($crate::metadata_ir::PalletErrorMetadataIR {
 					ty: $crate::scale_info::meta_type::<$( $error_type )*>()
 				})
 			}
@@ -3109,7 +3089,7 @@ macro_rules! __impl_module_constants_metadata {
 		{
 			#[doc(hidden)]
 			#[allow(dead_code)]
-			pub fn pallet_constants_metadata() -> $crate::sp_std::vec::Vec<$crate::metadata::PalletConstantMetadata> {
+			pub fn pallet_constants_metadata() -> $crate::sp_std::vec::Vec<$crate::metadata_ir::PalletConstantMetadataIR> {
 				// Create the `ByteGetter`s
 				$(
 					#[allow(non_upper_case_types)]
@@ -3133,7 +3113,7 @@ macro_rules! __impl_module_constants_metadata {
 				)*
 				$crate::sp_std::vec![
 					$(
-						$crate::metadata::PalletConstantMetadata {
+						$crate::metadata_ir::PalletConstantMetadataIR {
 							name: stringify!($name),
 							ty: $crate::scale_info::meta_type::<$type>(),
 							value: $default_byte_name::<$const_trait_instance $(, $const_instance)?>(
@@ -3207,13 +3187,13 @@ mod tests {
 	use super::*;
 	use crate::{
 		dispatch::{DispatchClass, DispatchInfo, Pays},
-		metadata::*,
+		metadata_ir::*,
 		traits::{
 			CallerTrait, CrateVersion, Get, GetCallName, IntegrityTest, OnFinalize, OnIdle,
 			OnInitialize, OnRuntimeUpgrade, PalletInfo,
 		},
 	};
-	use sp_weights::RuntimeDbWeight;
+	use sp_weights::{RuntimeDbWeight, Weight};
 
 	pub trait Config: system::Config + Sized
 	where
@@ -3405,7 +3385,7 @@ mod tests {
 	fn module_json_metadata() {
 		let metadata = Module::<TraitImpl>::call_functions();
 		let expected_metadata =
-			PalletCallMetadata { ty: scale_info::meta_type::<Call<TraitImpl>>() };
+			PalletCallMetadataIR { ty: scale_info::meta_type::<Call<TraitImpl>>() };
 		assert_eq!(expected_metadata, metadata);
 	}
 
@@ -3534,13 +3514,24 @@ mod tests {
 	fn test_new_call_variant() {
 		Call::<TraitImpl>::new_call_variant_aux_0();
 	}
+
+	pub fn from_actual_ref_time(ref_time: Option<u64>) -> PostDispatchInfo {
+		PostDispatchInfo {
+			actual_weight: ref_time.map(|t| Weight::from_all(t)),
+			pays_fee: Default::default(),
+		}
+	}
+
+	pub fn from_post_weight_info(ref_time: Option<u64>, pays_fee: Pays) -> PostDispatchInfo {
+		PostDispatchInfo { actual_weight: ref_time.map(|t| Weight::from_all(t)), pays_fee }
+	}
 }
 
 #[cfg(test)]
 // Do not complain about unused `dispatch` and `dispatch_aux`.
 #[allow(dead_code)]
 mod weight_tests {
-	use super::*;
+	use super::{tests::*, *};
 	use sp_core::{parameter_types, Get};
 	use sp_weights::RuntimeDbWeight;
 
@@ -3654,9 +3645,12 @@ mod weight_tests {
 	#[test]
 	fn extract_actual_weight_works() {
 		let pre = DispatchInfo { weight: Weight::from_parts(1000, 0), ..Default::default() };
-		assert_eq!(extract_actual_weight(&Ok(Some(7).into()), &pre), Weight::from_parts(7, 0));
 		assert_eq!(
-			extract_actual_weight(&Ok(Some(1000).into()), &pre),
+			extract_actual_weight(&Ok(from_actual_ref_time(Some(7))), &pre),
+			Weight::from_parts(7, 0)
+		);
+		assert_eq!(
+			extract_actual_weight(&Ok(from_actual_ref_time(Some(1000))), &pre),
 			Weight::from_parts(1000, 0)
 		);
 		assert_eq!(
@@ -3672,7 +3666,7 @@ mod weight_tests {
 	fn extract_actual_weight_caps_at_pre_weight() {
 		let pre = DispatchInfo { weight: Weight::from_parts(1000, 0), ..Default::default() };
 		assert_eq!(
-			extract_actual_weight(&Ok(Some(1250).into()), &pre),
+			extract_actual_weight(&Ok(from_actual_ref_time(Some(1250))), &pre),
 			Weight::from_parts(1000, 0)
 		);
 		assert_eq!(
@@ -3687,10 +3681,19 @@ mod weight_tests {
 	#[test]
 	fn extract_actual_pays_fee_works() {
 		let pre = DispatchInfo { weight: Weight::from_parts(1000, 0), ..Default::default() };
-		assert_eq!(extract_actual_pays_fee(&Ok(Some(7).into()), &pre), Pays::Yes);
-		assert_eq!(extract_actual_pays_fee(&Ok(Some(1000).into()), &pre), Pays::Yes);
-		assert_eq!(extract_actual_pays_fee(&Ok((Some(1000), Pays::Yes).into()), &pre), Pays::Yes);
-		assert_eq!(extract_actual_pays_fee(&Ok((Some(1000), Pays::No).into()), &pre), Pays::No);
+		assert_eq!(extract_actual_pays_fee(&Ok(from_actual_ref_time(Some(7))), &pre), Pays::Yes);
+		assert_eq!(
+			extract_actual_pays_fee(&Ok(from_actual_ref_time(Some(1000)).into()), &pre),
+			Pays::Yes
+		);
+		assert_eq!(
+			extract_actual_pays_fee(&Ok(from_post_weight_info(Some(1000), Pays::Yes)), &pre),
+			Pays::Yes
+		);
+		assert_eq!(
+			extract_actual_pays_fee(&Ok(from_post_weight_info(Some(1000), Pays::No)), &pre),
+			Pays::No
+		);
 		assert_eq!(
 			extract_actual_pays_fee(
 				&Err(DispatchError::BadOrigin.with_weight(Weight::from_parts(9, 0))),
@@ -3714,9 +3717,12 @@ mod weight_tests {
 			pays_fee: Pays::No,
 			..Default::default()
 		};
-		assert_eq!(extract_actual_pays_fee(&Ok(Some(7).into()), &pre), Pays::No);
-		assert_eq!(extract_actual_pays_fee(&Ok(Some(1000).into()), &pre), Pays::No);
-		assert_eq!(extract_actual_pays_fee(&Ok((Some(1000), Pays::Yes).into()), &pre), Pays::No);
+		assert_eq!(extract_actual_pays_fee(&Ok(from_actual_ref_time(Some(7))), &pre), Pays::No);
+		assert_eq!(extract_actual_pays_fee(&Ok(from_actual_ref_time(Some(1000))), &pre), Pays::No);
+		assert_eq!(
+			extract_actual_pays_fee(&Ok(from_post_weight_info(Some(1000), Pays::Yes)), &pre),
+			Pays::No
+		);
 	}
 }
 
