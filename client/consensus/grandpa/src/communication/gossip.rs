@@ -1451,6 +1451,8 @@ impl<Block: BlockT> GossipValidator<Block> {
 						.write()
 						.import_neighbor_message(who, update.into_neighbor_packet());
 
+					debug!("Received neighbour message {} from peer {}", update.into_neighbor_packet(), *who);
+
 					if let Some((peer, cost_benefit)) = report {
 						self.report(peer, cost_benefit);
 					}

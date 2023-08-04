@@ -26,6 +26,7 @@ use sc_network::types::ProtocolName;
 use sc_network_common::role::ObservedRole;
 use sp_runtime::traits::{Block as BlockT, Hash, HashFor};
 use std::{collections::HashMap, iter, num::NonZeroUsize, sync::Arc, time, time::Instant};
+use log::debug;
 
 // FIXME: Add additional spam/DoS attack protection: https://github.com/paritytech/substrate/issues/1115
 // NOTE: The current value is adjusted based on largest production network deployment (Kusama) and
@@ -462,6 +463,7 @@ impl<B: BlockT> ConsensusGossip<B> {
 		let message_hash = HashFor::<B>::hash(&message);
 		self.register_message_hashed(message_hash, topic, message.clone(), None);
 		let intent = if force { MessageIntent::ForcedBroadcast } else { MessageIntent::Broadcast };
+		debug!("Peers when multicasting {}", self.peers.keys().copied().collect());
 		propagate(
 			network,
 			self.protocol.clone(),
