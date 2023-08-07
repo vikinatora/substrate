@@ -1445,16 +1445,17 @@ impl<Block: BlockT> GossipValidator<Block> {
 					self.inner.write().validate_commit_message(who, message)
 				},
 				Ok(GossipMessage::Neighbor(update)) => {
+					let neighbour_packet = update.into_neighbor_packet();
 					message_name = Some("neighbor");
 					let (topics, action, catch_up, report) = self
 						.inner
 						.write()
-						.import_neighbor_message(who, update.into_neighbor_packet().clone());
+						.import_neighbor_message(who, neighbour_packet.clone());
 
 					debug!(target: LOG_TARGET, "Received neighbour message from peer {}", *who);
-					debug!(target: LOG_TARGET, "commit_finalized_height: {}", update.into_neighbor_packet().clone().commit_finalized_height);
-					debug!(target: LOG_TARGET, "commit_finalized_height: {}", update.into_neighbor_packet().clone().round.0);
-					debug!(target: LOG_TARGET, "commit_finalized_height: {}", update.into_neighbor_packet().clone().set_id.0);
+					debug!(target: LOG_TARGET, "commit_finalized_height: {}", neighbour_packet.clone().commit_finalized_height);
+					debug!(target: LOG_TARGET, "commit_finalized_height: {}", neighbour_packet.clone().round.0);
+					debug!(target: LOG_TARGET, "commit_finalized_height: {}", neighbour_packet.clone().set_id.0);
 
 
 					if let Some((peer, cost_benefit)) = report {
