@@ -276,7 +276,7 @@ impl<B: BlockT> ConsensusGossip<B> {
 			}
 		});
 		let intent = if force { MessageIntent::ForcedBroadcast } else { MessageIntent::Broadcast };
-		debug!(target= "grandpa", "Peers when multicasting: {}", self.peers.keys().copied().collect());
+		debug!(target: "grandpa", "Peers when multicasting: {}", self.peers.keys().copied().collect().join(", "));
 		propagate(
 			network,
 			self.protocol.clone(),
