@@ -384,7 +384,7 @@ pub(super) struct NeighborPacket<N> {
 }
 
 /// A versioned neighbor packet.
-#[derive(Debug, Encode, Decode)]
+#[derive(Debug, Encode, Decode, Clone)]
 pub(super) enum VersionedNeighborPacket<N> {
 	#[codec(index = 1)]
 	V1(NeighborPacket<N>),
@@ -1442,14 +1442,15 @@ impl<Block: BlockT> GossipValidator<Block> {
 				},
 				Ok(GossipMessage::Neighbor(update)) => {
 					message_name = Some("neighbor");
+					debug!(target: LOG_TARGET, "Received neighbour message from peer {}", *who);
+					debug!(target: LOG_TARGET, "commit_finalized_height: {}", update.clone().into_neighbor_packet().round.0);
+					debug!(target: LOG_TARGET, "commit_finalized_height: {}", update.clone().into_neighbor_packet().set_id.0);
+
 					let (topics, action, catch_up, report) = self
 						.inner
 						.write()
-						.import_neighbor_message(who, update.into_neighbor_packet().clone());
+						.import_neighbor_message(who, update.into_neighbor_packet());
 
-					debug!(target: LOG_TARGET, "Received neighbour message from peer {}", *who);
-					debug!(target: LOG_TARGET, "commit_finalized_height: {}", update.into_neighbor_packet().clone().round.0);
-					debug!(target: LOG_TARGET, "commit_finalized_height: {}", update.into_neighbor_packet().clone().set_id.0);
 
 					if let Some((peer, cost_benefit)) = report {
 						self.report(peer, cost_benefit);
